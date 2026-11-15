@@ -1,0 +1,11 @@
+{
+  "type": "knightquest:add_item",
+  "conditions": [
+    {
+      "condition": "neoforge:loot_table_id",
+      "loot_table_id": "knightquest:entities/ratman"
+    }
+  ],
+  "item": "knightquest:ratman_eye",
+  "chance": 1.0
+}

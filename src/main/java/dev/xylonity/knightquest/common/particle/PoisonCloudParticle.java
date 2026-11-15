@@ -37,7 +37,7 @@ public class PoisonCloudParticle extends SingleQuadParticle {
 
     @Override
     protected SingleQuadParticle.Layer getLayer() {
-        return SingleQuadParticle.Layer.TRANSLUCENT_TERRAIN;
+        return SingleQuadParticle.Layer.TRANSLUCENT;
     }
 
     @Override

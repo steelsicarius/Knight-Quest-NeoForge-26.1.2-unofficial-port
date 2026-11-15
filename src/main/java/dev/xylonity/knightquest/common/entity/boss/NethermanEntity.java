@@ -12,7 +12,6 @@ import dev.xylonity.knightquest.common.ai.navigator.GroundNavigator;
 import dev.xylonity.knightquest.common.entity.boss.ai.*;
 import dev.xylonity.knightquest.config.values.KQConfigValues;
 import dev.xylonity.knightquest.registry.KnightQuestItems;
-import dev.xylonity.knightquest.registry.KnightQuestSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -23,7 +22,6 @@ import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
@@ -90,7 +88,6 @@ public class NethermanEntity extends Monster implements GeoEntity {
     private static final EntityDataAccessor<Integer> COUNTER_SWITCH_PHASE_2 = SynchedEntityData.defineId(NethermanEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> COUNTER_SWITCH_PHASE_3 = SynchedEntityData.defineId(NethermanEntity.class, EntityDataSerializers.INT);
 
-    private static final int BOSS_MUSIC_INTERVAL_TICKS = 177 * 20; // disc length
 
     private boolean hasBeenSummonCleared = false;
     private boolean hasBeenSwitchedToPhase2 = false;
@@ -268,11 +265,11 @@ public class NethermanEntity extends Monster implements GeoEntity {
     public void tick() {
         super.tick();
 
-        // Boss music: the disc track loops while the boss is alive (replaces KnightLib's
-        // IBossMusicProvider; the sound event has a fixed 70-block range).
-        if (!this.level().isClientSide() && this.isAlive() && tickCount % BOSS_MUSIC_INTERVAL_TICKS == 0) {
-            this.level().playSound(null, this.blockPosition(), KnightQuestSounds.THE_ARCHITECT_OF_CHAOS.get(), SoundSource.RECORDS, 2.0F, 1.0F);
-        }
+        // Boss music is handled client-side by KnightQuestBossMusicManager (KnightLib's
+        // IBossMusicProvider behaviour): a global looping RECORDS track that starts as soon
+        // as the boss exists (phase 1), fades in/out over 40 ticks and pauses when the
+        // listener is further than 64 blocks or the boss dies. The old positional
+        // playSound() every 177s anchored the music to the summoning point.
 
         if (!initAttributes) {
             AttributeInstance maxHealth = this.getAttribute(Attributes.MAX_HEALTH);

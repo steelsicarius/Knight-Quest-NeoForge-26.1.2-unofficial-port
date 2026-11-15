@@ -30,7 +30,7 @@ public class PoisonParticle extends SingleQuadParticle {
 
     @Override
     protected SingleQuadParticle.Layer getLayer() {
-        return SingleQuadParticle.Layer.OPAQUE_TERRAIN;
+        return SingleQuadParticle.Layer.OPAQUE;
     }
 
     public void tick() {

@@ -1,0 +1,6 @@
+{
+  "type": "knightquest:add_item",
+  "conditions": [],
+  "item": "knightquest:small_essence",
+  "chance": 0.125
+}

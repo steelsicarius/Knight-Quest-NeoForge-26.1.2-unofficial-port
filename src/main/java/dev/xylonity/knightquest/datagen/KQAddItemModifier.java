@@ -7,9 +7,13 @@ import dev.xylonity.knightquest.config.values.KQConfigValues;
 import dev.xylonity.knightquest.registry.KnightQuestItems;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
 import net.neoforged.neoforge.common.loot.LootModifier;
@@ -60,7 +64,46 @@ public class KQAddItemModifier extends LootModifier {
             generatedLoot.add(new ItemStack(this.item));
         }
 
+        // Essence drops (ported from KnightLib's essence_all_hostiles GlobalLootModifier):
+        // every hostile (MobCategory.MONSTER) death has an independent chance of dropping a
+        // small essence and a great essence, unless the entity is blacklisted in the config.
+        if (item == KnightQuestItems.SMALL_ESSENCE.get()
+                && context.getQueriedLootTableId() != null
+                && context.getQueriedLootTableId().getPath().startsWith("entities/")
+                && context.getOptionalParameter(LootContextParams.THIS_ENTITY) instanceof Mob mob
+                && mob.getType().getCategory() == MobCategory.MONSTER
+                && isEntityAllowedForEssence(mob.getType())) {
+
+            if (context.getRandom().nextFloat() <= KQConfigValues.DROP_CHANCE_SMALL_ESSENCE.get().floatValue()) {
+                generatedLoot.add(new ItemStack(KnightQuestItems.SMALL_ESSENCE.get()));
+            }
+
+            if (context.getRandom().nextFloat() <= KQConfigValues.DROP_CHANCE_GREAT_ESSENCE.get().floatValue()) {
+                generatedLoot.add(new ItemStack(KnightQuestItems.GREAT_ESSENCE.get()));
+            }
+        }
+
         return generatedLoot;
+    }
+
+    /**
+     * Comma-separated entity id blacklist (e.g. "minecraft:silverfish,minecraft:endermite"),
+     * same semantics as KnightLib's {@code ESSENCE_ENTITY_BLACKLIST}.
+     */
+    private static boolean isEntityAllowedForEssence(EntityType<?> entityType) {
+        String blacklist = KQConfigValues.ESSENCE_ENTITY_BLACKLIST.get();
+        if (blacklist == null || blacklist.isBlank()) {
+            return true;
+        }
+
+        String entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entityType).toString();
+        for (String entry : blacklist.split(",")) {
+            if (entry.trim().equals(entityId)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override

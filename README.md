@@ -173,3 +173,43 @@ Great Chalice starset ring entity is intentionally replaced by the `starset` par
   pre-tinted textures (the old `item/template_spawn_egg` parent was removed in 26.x);
   `great_essence`/`small_essence` item models + definitions added (new KnightLib-replacement
   items had no model); swampman axe uses the swampman texture/animation (no axe-specific asset exists).
+- Fix (26.1.2-1.9.4, session 1): armor textures not rendering when equipped — three root causes:
+  - `equipment/*.json` for `chainmail`, `tengu` and the five tunics had empty layer lists
+    (`"humanoid_leggings": []` / `"humanoid": []`); 26.1.2's `EquipmentClientInfo` codec rejects
+    empty lists (`List must have contents`) so the whole file failed to parse and no layer
+    rendered. Empty layers are now omitted (vanilla style). Verified against the vanilla
+    26.1.2 client jar.
+  - The five geo armor piece models (`forze|silver|spider|veteran_chestplate`, `veteran_leggings`)
+    lived in `geckolib/models/entity/` while GeckoLib 5's `DefaultedItemGeoModel` resolves
+    `knightquest:item/<piece>` under `geckolib/models/item/` (confirmed via
+    `com.geckolib.cache.BakedModelCache`); the miss rendered the MISSINGNO cube (magenta legs on
+    the FallenKnight screenshot) and spammed `Unable to find model`. Moved to `models/item/`.
+  - Five animated item textures (`small_essence`, `paladin_sword`, `ratman_eye`, `khopesh`,
+    `great_essence`) had one frame index past the strip in their `.png.mcmeta` (inherited bug):
+    invalid indices removed, visuals unchanged.
+- Fix (26.1.2-1.9.4, session 2): visual + drop pass from user reports:
+  - Eldbomb explosion / Gremlin transform particles rendered as white blobs: the six custom
+    particle classes used `SingleQuadParticle.Layer.OPAQUE_TERRAIN`/`TRANSLUCENT_TERRAIN` (the
+    block atlas, which has no knightquest sprites). Now `SingleQuadParticle.Layer.OPAQUE`/`TRANSLUCENT`
+    (the particle atlas; `*_PARTICLE` are RenderPipeline names, not layer constants), matching the old `PARTICLE_SHEET_*` render types.
+  - Netherman boss music started ~3.5 minutes in (once the boss had already reached phase 3) and
+    stayed anchored to the summoning point. Ported KnightLib's `IBossMusicProvider` behaviour:
+    global (non-positional) looping RECORDS track per boss that starts as soon as the boss exists
+    (phase 1), fades in/out over 40 ticks and pauses beyond 64 blocks or on death
+    (`client/sound/NethermanBossMusicSound` + `KnightQuestBossMusicManager`).
+  - Phase 3 skin rendered solid black: the boss textures are semi-transparent part sheets and
+    the 1.21.1 renderer used `entityTranslucent`; the port's default cutout baked the translucent
+    robe pieces solid black. `NethermanRenderer`/`NethermanCloneRenderer` now override
+    `getRenderType` with `RenderTypes.entityTranslucent`.
+  - Creeper helmet eyes/mouth looked like holes: the shared texture has opaque black face pixels,
+    but the official reference renders them gold (shader emissive in 1.21.1). The face-pattern
+    pixels were recoloured to mustard gold `(210,170,65)` in the creeper set textures (helmet
+    underside stays black).
+  - No mob dropped essences on death: KnightLib did it with the `essence_all_hostiles` Global
+    Loot Modifier (12.5% small + 5% great essence on every MONSTER death, config blacklist), and
+    this port's datagen had never run so not a single GLM JSON was packaged. The essence branch
+    was added to `KQAddItemModifier` (chances + `ESSENCE_ENTITY_BLACKLIST` in the mod config) and
+    the three GLM JSONs plus the neoforge serde file are now written by hand into
+    `src/main/resources` (also restores the ratman eye and lizzy scale drops).
+  - Jar artefact renamed to `knightquest-neoforge-26.1.2-1.9.4.jar`
+    (`archivesName = ${mod_id}-neoforge-${minecraft_version}`).

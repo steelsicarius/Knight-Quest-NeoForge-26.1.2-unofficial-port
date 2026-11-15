@@ -1,6 +1,5 @@
 {
   "layers": {
-    "humanoid": [],
     "humanoid_leggings": [
       {
         "texture": "knightquest:tunic_blue"

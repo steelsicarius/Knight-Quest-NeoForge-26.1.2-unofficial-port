@@ -75,6 +75,11 @@ public class KQConfigValues {
     public static final ConfigValue<Double> DROP_CHANCE_RATMAN_EYE = register("DROP_CHANCE_RATMAN_EYE", 0.4);
     public static final ConfigValue<Double> DROP_CHANCE_LIZZY_SCALE = register("DROP_CHANCE_LIZZY_SCALE", 0.3);
 
+    // Essence Drop Probabilities (ported from KnightLib's GlobalLootModifier defaults)
+    public static final ConfigValue<Double> DROP_CHANCE_SMALL_ESSENCE = register("DROP_CHANCE_SMALL_ESSENCE", 0.125);
+    public static final ConfigValue<Double> DROP_CHANCE_GREAT_ESSENCE = register("DROP_CHANCE_GREAT_ESSENCE", 0.05);
+    public static final ConfigValue<String> ESSENCE_ENTITY_BLACKLIST = register("ESSENCE_ENTITY_BLACKLIST", "");
+
     // Armor Set Passives Configuration Section
     public static final ConfigValue<Boolean> ENABLE_BAMBOOSET_PUSH_PLAYERS = register("ENABLE_BAMBOOSET_PUSH_PLAYERS", false);
     public static final ConfigValue<Double> CHANCE_ENDERMANSET = register("CHANCE_ENDERMANSET", 0.4);
