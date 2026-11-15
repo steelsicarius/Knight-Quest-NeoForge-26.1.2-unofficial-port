@@ -154,3 +154,34 @@ corrige los 6 issues reportados por el usuario con capturas. Compilación en cur
       sesión 1).
 - [ ] Opcional: `runData` para regenerar los GLM JSONs con datagen (los actuales son
       escritos a mano y funcionales).
+
+## Sesión 3 (2026-11-15): look clásico del Netherman + huecos reales en el casco creeper
+
+### Diagnóstico (con el jar oficial 1.9.4 de Modrinth como referencia)
+
+- **Partículas / música / drops: CONFIRMADOS arreglados por el usuario.**
+- **Fase 3 del Netherman**: los assets 1.9.x (modelo + textura magic) son byte-idénticos
+  en 1.9.1/1.9.3/1.9.4 oficial y 1.20.1 — el ensamblado UV del par actual produce
+  cuerpo negro + extremidades tostadas + cuernos dorados (simulación 3D = la captura
+  del usuario, incluidos los 3 puntos dorados de la cara). El look de la referencia
+  del usuario (armadura de piedra blanca + piernas con degradado púrpura) = el arte
+  CLÁSICO de Knight Quest 1.5.0 (1.18.2), texturas 64x64 completas.
+  → **Fix**: portar el paquete clásico (`netherman_classic.geo.json` + 3 texturas
+  `netherman_classic_{fire,ice,magic}.png` de 1.5.0) y usarlo para TODAS las fases vía
+  los overrides existentes. El modelo clásico comparte nombres de huesos
+  (main/Body/head/LeftArm/RightArm/LeftLeg/RightLeg) con los ficheros de animación por
+  fase, así que las animaciones siguen funcionando (los keyframes de huesos nuevos se
+  saltan con warning). Las texturas de disolución solo existen para el layout nuevo →
+  la transición mantiene la textura de la fase anterior hasta completar el contador
+  (mismo ritmo visual). Escala 1.2 mantenida (igual que 1.5.0).
+- **Casco creeper**: NO hay ninguna función que haga la zona transparente — la textura
+  oficial (1.9.3 y 1.9.4, idénticas) tiene ojos/boca negros OPAQUES; el dorado de la
+  imagen oficial = un shader pack haciendo emisivos los píxeles negros / el fondo
+  viéndose a través. Como el usuario quiere la zona "transparente" en el juego, se
+  reconstruyeron las 4 texturas desde el arte oficial 1.9.4 y se perforó alpha=0
+  EXACTAMENTE en los 44 px del patrón facial oficial (ojos/boca + acentos
+  verde-oscuro (24,36,31) que lo rodean); el borde inferior del casco sigue sólido.
+  Resultado: agujeros reales (cutout) — se ve la cabeza a través.
+
+### Verificación
+- `runServer`: Done + mod 1.9.4 cargado, sin errores de parseo (GLM incluidos).

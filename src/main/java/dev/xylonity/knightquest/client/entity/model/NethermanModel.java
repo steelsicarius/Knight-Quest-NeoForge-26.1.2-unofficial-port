@@ -6,9 +6,18 @@ import dev.xylonity.knightquest.common.entity.boss.NethermanEntity;
 import net.minecraft.resources.Identifier;
 
 /**
- * GeckoLib 5 model for the Netherman boss. The geo model, texture and animation all switch
- * with the boss phase; the model/texture choices are resolved from live entity state in
- * addAdditionalStateData, while the animation can be computed directly from the animatable.
+ * GeckoLib 5 model for the Netherman boss.
+ * <p>
+ * Since 26.1.2-1.9.5 the boss uses the CLASSIC (1.5.0-era) model and texture art for all
+ * three phases: the redesigned 1.9.x part-sheet textures left the boss mostly black in
+ * game (their painted regions do not line up with the redesigned phase models' UVs), and
+ * the user-facing reference look is the classic stone-armour + gradient-legs art. The
+ * classic model shares its bone names (main/Body/head/LeftArm/RightArm/LeftLeg/RightLeg)
+ * with the per-phase animation files, so the existing phase animations keep driving it;
+ * keyframes for the redesigned-only bones (IceArm, MagicArm, bone variants, bipedBody)
+ * are skipped by GeckoLib. The dissolve transition frames only exist for the redesigned
+ * layout, so the phase switch now holds the previous phase's texture until the switch
+ * counter completes (same visual pacing, no 128x128 dissolve sheets).
  */
 public class NethermanModel extends KQEntityModel<NethermanEntity> {
 
@@ -22,81 +31,22 @@ public class NethermanModel extends KQEntityModel<NethermanEntity> {
     public void addAdditionalStateData(NethermanEntity animatable, Object renderData, GeoRenderState renderState) {
         super.addAdditionalStateData(animatable, renderData, renderState);
 
-        // Model
-        String model;
-        if (animatable.isDeadOrDying()) {
-            model = "netherman_magic";
-        } else {
-            model = switch (animatable.getPhase()) {
-                case 1 -> "netherman_fire";
-                case 2 -> animatable.getCounterSwitchPhase2() == 130 ? "netherman_ice" : "netherman_fire";
-                default -> animatable.getCounterSwitchPhase3() == 160 ? "netherman_magic" : "netherman_ice";
-            };
-        }
-        renderState.addGeckolibData(MODEL_OVERRIDE, Identifier.fromNamespaceAndPath(KnightQuestCommon.MOD_ID, "entity/" + model));
+        // Model: the classic geometry for every phase
+        renderState.addGeckolibData(MODEL_OVERRIDE, Identifier.fromNamespaceAndPath(KnightQuestCommon.MOD_ID, "entity/netherman_classic"));
 
-        // Texture
-        Identifier texture;
+        // Texture: classic art per phase (hold the previous texture while the switch
+        // counter runs, matching the old crossfade pacing without the dissolve sheets)
+        String texture;
         if (animatable.isDeadOrDying()) {
-            texture = Identifier.fromNamespaceAndPath(KnightQuestCommon.MOD_ID, TEXTURE_PATH + "netherman_magic.png");
-        } else if (animatable.getPhase() == 2 && animatable.getCounterSwitchPhase2() < 130) {
-            int c = animatable.getCounterSwitchPhase2();
-            String path;
-            if (c < 50) {
-                path = TEXTURE_PATH + "netherman_fire.png";
-            } else if (c < 60) {
-                path = TEXTURE_PATH + "animated/netherman_switch_phase2_0.png";
-            } else if (c < 70) {
-                path = TEXTURE_PATH + "animated/netherman_switch_phase2_1.png";
-            } else if (c < 80) {
-                path = TEXTURE_PATH + "animated/netherman_switch_phase2_2.png";
-            } else if (c < 90) {
-                path = TEXTURE_PATH + "animated/netherman_switch_phase2_3.png";
-            } else if (c < 100) {
-                path = TEXTURE_PATH + "animated/netherman_switch_phase2_4.png";
-            } else if (c < 110) {
-                path = TEXTURE_PATH + "animated/netherman_switch_phase2_5.png";
-            } else if (c < 120) {
-                path = TEXTURE_PATH + "animated/netherman_switch_phase2_6.png";
-            } else if (c < 130) {
-                path = TEXTURE_PATH + "animated/netherman_switch_phase2_7.png";
-            } else {
-                path = TEXTURE_PATH + "netherman_ice.png";
-            }
-            texture = Identifier.fromNamespaceAndPath(KnightQuestCommon.MOD_ID, path);
-        } else if (animatable.getPhase() == 3 && animatable.getCounterSwitchPhase3() < 160) {
-            int c = animatable.getCounterSwitchPhase3();
-            String path;
-            if (c < 50) {
-                path = TEXTURE_PATH + "netherman_ice.png";
-            } else if (c < 60) {
-                path = TEXTURE_PATH + "animated/netherman_switch_phase3_0.png";
-            } else if (c < 70) {
-                path = TEXTURE_PATH + "animated/netherman_switch_phase3_1.png";
-            } else if (c < 80) {
-                path = TEXTURE_PATH + "animated/netherman_switch_phase3_2.png";
-            } else if (c < 90) {
-                path = TEXTURE_PATH + "animated/netherman_switch_phase3_3.png";
-            } else if (c < 100) {
-                path = TEXTURE_PATH + "animated/netherman_switch_phase3_4.png";
-            } else if (c < 110) {
-                path = TEXTURE_PATH + "animated/netherman_switch_phase3_5.png";
-            } else if (c < 120) {
-                path = TEXTURE_PATH + "animated/netherman_switch_phase3_6.png";
-            } else if (c < 160) {
-                path = TEXTURE_PATH + "animated/netherman_switch_phase3_7.png";
-            } else {
-                path = TEXTURE_PATH + "netherman_magic.png";
-            }
-            texture = Identifier.fromNamespaceAndPath(KnightQuestCommon.MOD_ID, path);
+            texture = "netherman_classic_magic";
         } else {
             texture = switch (animatable.getPhase()) {
-                case 1 -> Identifier.fromNamespaceAndPath(KnightQuestCommon.MOD_ID, TEXTURE_PATH + "netherman_fire.png");
-                case 2 -> Identifier.fromNamespaceAndPath(KnightQuestCommon.MOD_ID, TEXTURE_PATH + "netherman_ice.png");
-                default -> Identifier.fromNamespaceAndPath(KnightQuestCommon.MOD_ID, TEXTURE_PATH + "netherman_magic.png");
+                case 1 -> "netherman_classic_fire";
+                case 2 -> animatable.getCounterSwitchPhase2() == 130 ? "netherman_classic_ice" : "netherman_classic_fire";
+                default -> animatable.getCounterSwitchPhase3() == 160 ? "netherman_classic_magic" : "netherman_classic_ice";
             };
         }
-        renderState.addGeckolibData(TEXTURE_OVERRIDE, texture);
+        renderState.addGeckolibData(TEXTURE_OVERRIDE, Identifier.fromNamespaceAndPath(KnightQuestCommon.MOD_ID, TEXTURE_PATH + texture + ".png"));
     }
 
     @Override

@@ -213,3 +213,11 @@ Great Chalice starset ring entity is intentionally replaced by the `starset` par
     `src/main/resources` (also restores the ratman eye and lizzy scale drops).
   - Jar artefact renamed to `knightquest-neoforge-26.1.2-1.9.4.jar`
     (`archivesName = ${mod_id}-neoforge-${minecraft_version}`).
+- Fix (26.1.2-1.9.4, session 3): the Netherman uses the classic 1.5.0-era model and
+  texture art for all three phases (the redesigned 1.9.x part-sheet textures left the
+  boss mostly black: the reference look is the classic stone-armour + gradient-legs
+  art, confirmed against the official 1.9.4 jar and 3D UV assembly); the creeper armour
+  face zone (eyes/mouth) is now truly see-through — the four textures were rebuilt from
+  the official 1.9.4 art with alpha=0 punched exactly on the official face-pattern
+  pixels (the "glowing gold" of the official screenshots is a shader-pack effect, not a
+  mod function).
